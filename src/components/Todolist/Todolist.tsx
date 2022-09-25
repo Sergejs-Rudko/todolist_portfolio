@@ -3,13 +3,15 @@ import styles from "./Todolist.module.css"
 import {FilterValueType} from "../../App";
 
 type TodolistPropsType = {
+    id: string
     title: string
     tasks: TaskType[]
-    removeTask: (id: string) => void
-    changeFilter: (filterValue: FilterValueType) => void
-    addTask: (title: string) => void
-    changeTaskStatus: (id: string, isDone: boolean) => void
+    removeTask: (id: string, todolistId: string) => void
+    changeFilter: (filterValue: FilterValueType, todolistId: string) => void
+    addTask: (title: string, todolistId: string) => void
+    changeTaskStatus: (id: string, isDone: boolean, todolistId: string) => void
     filter: FilterValueType
+    removeTodolist: (todolistId: string) => void
 }
 
 export type TaskType = {
@@ -30,7 +32,7 @@ export const Todolist = React.memo((props: TodolistPropsType) => {
 
     const addTask = () => {
         if (title.trim().length > 0) {
-            props.addTask(title)
+            props.addTask(title, props.id)
         } else {
             setError("Title is required")
         }
@@ -43,10 +45,16 @@ export const Todolist = React.memo((props: TodolistPropsType) => {
         }
     }
 
+    const removeTodolistHandler = () => {
+        props.removeTodolist(props.id)
+    }
+
 
     return (
         <div>
-            <h3>{props.title}</h3>
+            <h3>{props.title}
+                <button onClick={removeTodolistHandler}>x</button>
+            </h3>
             <div>
                 <input value={title}
                        onChange={onTaskTitleChangeHandler}
@@ -61,11 +69,11 @@ export const Todolist = React.memo((props: TodolistPropsType) => {
                 {
                     props.tasks.map((t) => {
                         const removeTaskHandler = () => {
-                            props.removeTask(t.id)
+                            props.removeTask(t.id, props.id)
                         }
 
                         const onChangeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
-                            props.changeTaskStatus(t.id, e.currentTarget.checked)
+                            props.changeTaskStatus(t.id, e.currentTarget.checked, props.id)
                         }
 
                         return (
@@ -79,13 +87,13 @@ export const Todolist = React.memo((props: TodolistPropsType) => {
             </ul>
             <div>
                 <button className={props.filter === "All" ? styles.activeFilter : ""}
-                        onClick={() => props.changeFilter("All")}>All
+                        onClick={() => props.changeFilter("All", props.id)}>All
                 </button>
                 <button className={props.filter === "Completed" ? styles.activeFilter : ""}
-                        onClick={() => props.changeFilter("Completed")}>Completed
+                        onClick={() => props.changeFilter("Completed", props.id)}>Completed
                 </button>
                 <button className={props.filter === "Active" ? styles.activeFilter : ""}
-                        onClick={() => props.changeFilter("Active")}>Active
+                        onClick={() => props.changeFilter("Active", props.id)}>Active
                 </button>
             </div>
         </div>
