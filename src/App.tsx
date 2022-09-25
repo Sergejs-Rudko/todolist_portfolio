@@ -24,9 +24,17 @@ function App() {
         setTasks(tasks)
     }
 
-    const addTask = (title : string) => {
-        let task : TaskType = {id : v1(), title , isDone : false}
-        setTasks([...tasks,task])
+    const addTask = (title: string) => {
+        let task: TaskType = {id: v1(), title, isDone: false}
+        setTasks([...tasks, task])
+    }
+
+    const changeTaskStatus = (id: string, isDone: boolean) => {
+        let task = tasks.find((t) => t.id === id)
+        if (task) {
+            let newTasks = tasks.map((t) => t.id !== id ? t : {...t, isDone})
+            setTasks(newTasks)
+        }
     }
     //FUNCTIONS*________________________________________________________________________________________________________
     let tasksForTodolist = tasks
@@ -46,6 +54,8 @@ function App() {
                       removeTask={removeTask}
                       changeFilter={changeFilter}
                       addTask={addTask}
+                      changeTaskStatus={changeTaskStatus}
+                      filter={filter}
             />
         </div>
     );
