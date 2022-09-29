@@ -1,5 +1,8 @@
 import React, {ChangeEvent, KeyboardEvent, useState} from "react";
 import styles from "./AddItemForm.module.css"
+import {IconButton, TextField} from "@mui/material";
+import ControlPointIcon from '@mui/icons-material/ControlPoint';
+
 
 type PropsType = {
     addItem: (title: string) => void
@@ -37,14 +40,14 @@ export const AddItemForm = React.memo((props: PropsType) => {
 
     return (
         <div>
-            <input value={title}
-                   onChange={onTaskTitleChangeHandler}
-                   onKeyPress={onEnterPressAddTaskHandler}
-                   className={error ? styles.error : ""}/>
-            <button onClick={addItem}>+</button>
-            {
-                error && <div style={{color: "red"}}>{error}</div>
-            }
+            <TextField error={!!error}
+                       variant={"standard"} value={title}
+                       onChange={onTaskTitleChangeHandler}
+                       onKeyPress={onEnterPressAddTaskHandler}
+                       helperText={error}/>
+            <IconButton onClick={addItem}>
+                <ControlPointIcon/>
+            </IconButton>
         </div>
     )
 })

@@ -1,6 +1,8 @@
 import React, {ChangeEvent} from "react";
 import styles from "../Todolist/Todolist.module.css";
 import {EditableSpan} from "../EditableSpan/EditableSpan";
+import DeleteIcon from '@mui/icons-material/Delete';
+import {Checkbox, IconButton} from "@mui/material";
 
 type PropsType = {
     id: string
@@ -28,11 +30,13 @@ export const Task = React.memo((props: PropsType) => {
 
     return (
         <div>
-            <li key={props.id} className={props.isDone ? styles.taskIsDone : ""}>
-                <input type="checkbox" checked={props.isDone} onChange={onChangeTaskStatusHandler}/>
+            <div key={props.id} className={props.isDone ? styles.taskIsDone : ""}>
+                <Checkbox checked={props.isDone} onChange={onChangeTaskStatusHandler}/>
                 <EditableSpan title={props.title} onChangeTitle={(title: string) => editTaskTitle(title)}/>
-                <button onClick={removeTaskHandler}>X</button>
-            </li>
+                <IconButton onClick={removeTaskHandler} color={"secondary"}>
+                    <DeleteIcon/>
+                </IconButton>
+            </div>
         </div>
     )
 })
