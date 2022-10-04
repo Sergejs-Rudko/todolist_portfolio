@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from "react";
+import React, {ChangeEvent, useCallback} from "react";
 import styles from "../Todolist/Todolist.module.css";
 import {EditableSpan} from "../EditableSpan/EditableSpan";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -21,12 +21,11 @@ export const Task = React.memo((props: PropsType) => {
 
     const onChangeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>) => {
         props.changeTaskStatus(props.id, e.currentTarget.checked, props.todolistId)
-
     }
 
-    const editTaskTitle = (title: string) => {
+    const editTaskTitle = useCallback((title: string) => {
         props.editTaskTitle(props.todolistId, props.id, title)
-    }
+    }, [props.editTaskTitle, props.todolistId, props.id])
 
     return (
         <div>

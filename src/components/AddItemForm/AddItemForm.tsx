@@ -10,6 +10,7 @@ type PropsType = {
 
 
 export const AddItemForm = React.memo((props: PropsType) => {
+    console.log("Add item form rendered")
     //STATE_____________________________________________________________________________________________________________
     let [title, setTitle] = useState("")
     let [error, setError] = useState<string | null>(null)
@@ -26,7 +27,9 @@ export const AddItemForm = React.memo((props: PropsType) => {
     }
 
     const onTaskTitleChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-        setError(null)
+        if(error !== null){
+            setError(null)
+        }
         setTitle(e.currentTarget.value)
     }
 

@@ -5,7 +5,7 @@ import {
     removeTodolistAC,
     todolistReducer
 } from "./todolistReducer";
-import {TodolistType} from "../App";
+import {TodolistType} from "../AppWithRedux";
 
 test("Change todolist title", () => {
     const startState: TodolistType[] = [

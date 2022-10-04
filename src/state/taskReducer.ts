@@ -1,25 +1,14 @@
 import {v1} from "uuid";
 import {TaskType} from "../components/Todolist/Todolist";
 import {AddTodolistActionType, RemoveTodolistActionType} from "./todolistReducer";
+import {TaskFromServerType} from "../API/todolistAPI";
 
-type StateType = {
+export type StateType = {
     [key: string]: TaskType[]
 }
-export let todolistId1 = v1()
-export let todolistId2 = v1()
 
-let initialState: StateType = {
-    [todolistId1]: [
-        {id: v1(), title: "HTML", isDone: true},
-        {id: v1(), title: "CSS", isDone: false},
-        {id: v1(), title: "JS", isDone: false},
-    ],
-    [todolistId2]: [
-        {id: v1(), title: "Banana", isDone: true},
-        {id: v1(), title: "Milk", isDone: false},
-        {id: v1(), title: "Snickers", isDone: false},
-    ]
-}
+
+let initialState: StateType = {}
 
 
 export const taskReducer = (state: StateType = initialState, action: UnionActionType): StateType => {
@@ -28,7 +17,7 @@ export const taskReducer = (state: StateType = initialState, action: UnionAction
             return {...state, [action.todolistId]: state[action.todolistId].filter((t) => t.id !== action.id)}
         }
         case "ADD_TASK": {
-            const task: TaskType = {id: "4", title: action.title, isDone: false}
+            const task: TaskType = {id: v1(), title: action.title, isDone: false}
             return {...state, [action.todolistId]: [...state[action.todolistId], task]}
         }
         case "CHANGE_TASK_STATUS": {
@@ -56,6 +45,15 @@ export const taskReducer = (state: StateType = initialState, action: UnionAction
             let stateCopy = {...state}
             delete stateCopy[action.id]
             return {...stateCopy,}
+        }
+        case "SET_TASKS": {
+            debugger
+            let tasks = action.tasks.map((t) => ({id: t.id, title: t.title, isDone: t.completed} as const))
+            console.log("TSKS NOW")
+            console.log(JSON.stringify(tasks))
+            //@ts-ignore
+            return tasks
+
         }
         default : {
             return state
@@ -90,6 +88,11 @@ export const changeTaskTitleAC = (todolistId: string, id: string, title: string)
     title
 }) as const
 
+export const setTasksAC = (tasks: TaskFromServerType[]) => ({
+    type: "SET_TASKS",
+    tasks
+}) as const
+
 
 //ACTION TYPES__________________________________________________________________________________________________________
 type UnionActionType =
@@ -99,7 +102,9 @@ type UnionActionType =
     | ChangeTaskTitleActionType
     | AddTodolistActionType
     | RemoveTodolistActionType
+    | SetTasksActionType
 type RemoveTaskActionType = ReturnType<typeof removeTaskAC>
 type AddTaskActionType = ReturnType<typeof addTaskAC>
 type ChangeTaskStatusActionType = ReturnType<typeof changeTaskStatusAC>
 type ChangeTaskTitleActionType = ReturnType<typeof changeTaskTitleAC>
+type SetTasksActionType = ReturnType<typeof setTasksAC>
