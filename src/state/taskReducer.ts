@@ -1,23 +1,46 @@
 import {v1} from "uuid";
-import {TaskType} from "../components/Todolist/Todolist";
-import {AddTodolistActionType, RemoveTodolistActionType} from "./todolistReducer";
-import {TaskFromServerType} from "../API/todolistAPI";
 
-export type StateType = {
-    [key: string]: TaskType[]
+import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistsActionType} from "./todolistReducer";
+import {TaskFromServerType, TaskModelType, TaskPriorities, TaskStatuses, todolistAPI} from "../API/todolistAPI";
+import {AppThunk} from "./store";
+
+/*export type StateType = {
+    [key: string]: TaskFromServerType[]
+}*/
+export type TaskStateType = {
+    [key: string]: TaskFromServerType[]
 }
 
+let initialState: TaskStateType = {}
 
-let initialState: StateType = {}
 
-
-export const taskReducer = (state: StateType = initialState, action: UnionActionType): StateType => {
+export const taskReducer = (state: TaskStateType = initialState, action: TasksActionTypes): TaskStateType => {
     switch (action.type) {
+        case "SET_TODOLISTS": {
+            let stateCopy = {...state}
+            action.todolists.forEach((tl) => stateCopy[tl.id] = [])
+            return stateCopy
+
+        }
+        case "SET_TASKS": {
+            return {...state, [action.todolistId]: action.tasks}
+        }
         case "REMOVE_TASK": {
             return {...state, [action.todolistId]: state[action.todolistId].filter((t) => t.id !== action.id)}
         }
         case "ADD_TASK": {
-            const task: TaskType = {id: v1(), title: action.title, isDone: false}
+            const task: TaskFromServerType = {
+                id: v1(),
+                title: action.title,
+                addedDate: "",
+                deadline: "",
+                description: "",
+                priority: TaskPriorities.Low,
+                order: 0,
+                status: TaskStatuses.New,
+                startDate: "",
+                todolistId: action.todolistId
+            }
             return {...state, [action.todolistId]: [...state[action.todolistId], task]}
         }
         case "CHANGE_TASK_STATUS": {
@@ -25,12 +48,12 @@ export const taskReducer = (state: StateType = initialState, action: UnionAction
                 ...state,
                 [action.todolistId]: state[action.todolistId].map((t) => t.id === action.id ? {
                     ...t,
-                    isDone: action.isDone
+                    status: action.status
                 } : t)
             }
         }
         case "ADD_TODOLIST": {
-            return {...state, [action.id]: []}
+            return {...state, [action.todolist.id]: []}
         }
         case "CHANGE_TASK_TITLE": {
             return {
@@ -46,14 +69,17 @@ export const taskReducer = (state: StateType = initialState, action: UnionAction
             delete stateCopy[action.id]
             return {...stateCopy,}
         }
-        case "SET_TASKS": {
-            debugger
-            let tasks = action.tasks.map((t) => ({id: t.id, title: t.title, isDone: t.completed} as const))
-            console.log("TSKS NOW")
-            console.log(JSON.stringify(tasks))
-            //@ts-ignore
-            return tasks
-
+        case "UPDATE_TASK": {
+            return {
+                ...state,
+                [action.todolistId]: state[action.todolistId].map((t) => t.id === action.id ? {
+                    ...action.model,
+                    id: t.id,
+                    todolistId: t.todolistId,
+                    order: t.order,
+                    addedDate: t.addedDate
+                } : t)
+            }
         }
         default : {
             return state
@@ -74,11 +100,11 @@ export const addTaskAC = (todolistId: string, title: string) => ({
     title
 }) as const
 
-export const changeTaskStatusAC = (todolistId: string, id: string, isDone: boolean) => ({
+export const changeTaskStatusAC = (todolistId: string, id: string, status: TaskStatuses) => ({
     type: "CHANGE_TASK_STATUS",
     todolistId,
     id,
-    isDone
+    status
 }) as const
 
 export const changeTaskTitleAC = (todolistId: string, id: string, title: string) => ({
@@ -88,14 +114,48 @@ export const changeTaskTitleAC = (todolistId: string, id: string, title: string)
     title
 }) as const
 
-export const setTasksAC = (tasks: TaskFromServerType[]) => ({
+export const setTasksAC = (tasks: TaskFromServerType[], todolistId: string) => ({
     type: "SET_TASKS",
+    todolistId,
     tasks
 }) as const
 
+export const updateTaskAC = (model: TaskModelType, todolistId: string, id: string) => ({
+    type: "UPDATE_TASK",
+    todolistId,
+    id,
+    model
+}) as const
+
+// THUNKS_______________________________________________________________________________________________________________
+export const fetchTasksTC = (todolistId: string): AppThunk => async dispatch => {
+    const resp = await todolistAPI.getTasks(todolistId)
+    dispatch(setTasksAC(resp.data.items, todolistId))
+}
+
+export const addTaskTC = (todolistId: string, title: string): AppThunk => async dispatch => {
+    const resp = await todolistAPI.createTask(todolistId, title)
+    if (resp.data.resultCode === 0) {
+        dispatch(addTaskAC(todolistId, title))
+    }
+}
+
+export const updateTaskTC = (todolistId: string, taskId: string, model: TaskModelType): AppThunk => async dispatch => {
+    const resp = await todolistAPI.updateTask(todolistId, taskId, model)
+    if (resp.data.resultCode === 0) {
+        dispatch(updateTaskAC(model, todolistId, taskId))
+    }
+}
+
+export const removeTaskTC = (todolistId: string, taskId: string): AppThunk => async dispatch => {
+    const resp = await todolistAPI.deleteTask(todolistId, taskId)
+    if (resp.data.resultCode === 0) {
+        dispatch(removeTaskAC(todolistId, taskId))
+    }
+}
 
 //ACTION TYPES__________________________________________________________________________________________________________
-type UnionActionType =
+export type TasksActionTypes =
     RemoveTaskActionType
     | AddTaskActionType
     | ChangeTaskStatusActionType
@@ -103,8 +163,12 @@ type UnionActionType =
     | AddTodolistActionType
     | RemoveTodolistActionType
     | SetTasksActionType
+    | UpdateTaskActionType
+    | SetTodolistsActionType
+
 type RemoveTaskActionType = ReturnType<typeof removeTaskAC>
 type AddTaskActionType = ReturnType<typeof addTaskAC>
 type ChangeTaskStatusActionType = ReturnType<typeof changeTaskStatusAC>
 type ChangeTaskTitleActionType = ReturnType<typeof changeTaskTitleAC>
 type SetTasksActionType = ReturnType<typeof setTasksAC>
+type UpdateTaskActionType = ReturnType<typeof updateTaskAC>

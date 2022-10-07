@@ -43,16 +43,31 @@ export type TodolistFromServerType = {
     title: string
 }
 
+export enum TaskStatuses {
+    New,
+    InProgress,
+    Completed,
+    Draft
+}
+
+export enum TaskPriorities {
+    Low,
+    Middle,
+    High,
+    Urgent,
+    Later
+}
+
 export type TaskFromServerType = {
-    description: string
     title: string
-    completed: boolean
-    status: number
-    priority: number
+    description: string
+    status: TaskStatuses
+    priority: TaskPriorities
     startDate: string
     deadline: string
+    //model ^^
     id: string
-    todoListId: string
+    todolistId: string
     order: number
     addedDate: string
 }
@@ -70,12 +85,11 @@ type GetTasksResponseType = {
 }
 
 
-type TaskModelType = {
+export type TaskModelType = {
     title: string
     description: string
-    completed: boolean
-    status: number
-    priority: number
+    status: TaskStatuses
+    priority: TaskPriorities
     startDate: string
     deadline: string
 }
