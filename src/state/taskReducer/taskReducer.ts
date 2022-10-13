@@ -1,8 +1,13 @@
 import {v1} from "uuid";
-
-import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistsActionType} from "./todolistReducer";
-import {TaskFromServerType, TaskModelType, TaskPriorities, TaskStatuses, todolistAPI} from "../API/todolistAPI";
-import {AppThunk} from "./store";
+import {
+    AddTodolistActionType,
+    RemoveTodolistActionType,
+    SetTodolistsActionType
+} from "../todolistReducer/todolistReducer";
+import {TaskFromServerType, TaskModelType, TaskPriorities, TaskStatuses, todolistAPI} from "../../API/todolistAPI";
+import {AppThunk} from "../store";
+import {setAppStatusAC} from "../appReducer/appReducer";
+import {handleNetworkError, handleServerError} from "../../utils/handleErrors";
 
 /*export type StateType = {
     [key: string]: TaskFromServerType[]
@@ -73,11 +78,7 @@ export const taskReducer = (state: TaskStateType = initialState, action: TasksAc
             return {
                 ...state,
                 [action.todolistId]: state[action.todolistId].map((t) => t.id === action.id ? {
-                    ...action.model,
-                    id: t.id,
-                    todolistId: t.todolistId,
-                    order: t.order,
-                    addedDate: t.addedDate
+                    ...t, ...action.model
                 } : t)
             }
         }
@@ -129,28 +130,61 @@ export const updateTaskAC = (model: TaskModelType, todolistId: string, id: strin
 
 // THUNKS_______________________________________________________________________________________________________________
 export const fetchTasksTC = (todolistId: string): AppThunk => async dispatch => {
-    const resp = await todolistAPI.getTasks(todolistId)
-    dispatch(setTasksAC(resp.data.items, todolistId))
+    try {
+        dispatch(setAppStatusAC("loading"))
+        const resp = await todolistAPI.getTasks(todolistId)
+        dispatch(setTasksAC(resp.data.items, todolistId))
+        dispatch(setAppStatusAC("idle"))
+    } catch (error) {
+        handleNetworkError(error, dispatch)
+    }
 }
 
 export const addTaskTC = (todolistId: string, title: string): AppThunk => async dispatch => {
-    const resp = await todolistAPI.createTask(todolistId, title)
-    if (resp.data.resultCode === 0) {
-        dispatch(addTaskAC(todolistId, title))
+    try {
+        dispatch(setAppStatusAC("loading"))
+        const resp = await todolistAPI.createTask(todolistId, title)
+        if (resp.data.resultCode === 0) {
+            dispatch(addTaskAC(todolistId, title))
+            dispatch(setAppStatusAC("idle"))
+        }
+        if (resp.data.resultCode !== 0) {
+            handleServerError(resp.data, dispatch)
+        }
+    } catch (error) {
+        handleNetworkError(error, dispatch)
     }
 }
 
 export const updateTaskTC = (todolistId: string, taskId: string, model: TaskModelType): AppThunk => async dispatch => {
-    const resp = await todolistAPI.updateTask(todolistId, taskId, model)
-    if (resp.data.resultCode === 0) {
-        dispatch(updateTaskAC(model, todolistId, taskId))
+    try {
+        dispatch(setAppStatusAC("loading"))
+        const resp = await todolistAPI.updateTask(todolistId, taskId, model)
+        if (resp.data.resultCode === 0) {
+            dispatch(updateTaskAC(model, todolistId, taskId))
+            dispatch(setAppStatusAC("idle"))
+        }
+        if (resp.data.resultCode !== 0) {
+            handleServerError(resp.data, dispatch)
+        }
+    } catch (error) {
+        handleNetworkError(error, dispatch)
     }
 }
 
 export const removeTaskTC = (todolistId: string, taskId: string): AppThunk => async dispatch => {
-    const resp = await todolistAPI.deleteTask(todolistId, taskId)
-    if (resp.data.resultCode === 0) {
-        dispatch(removeTaskAC(todolistId, taskId))
+    try {
+        dispatch(setAppStatusAC("loading"))
+        const resp = await todolistAPI.deleteTask(todolistId, taskId)
+        if (resp.data.resultCode === 0) {
+            dispatch(removeTaskAC(todolistId, taskId))
+            dispatch(setAppStatusAC("idle"))
+        }
+        if (resp.data.resultCode !== 0) {
+            handleServerError(resp.data, dispatch)
+        }
+    } catch (error) {
+        handleNetworkError(error, dispatch)
     }
 }
 

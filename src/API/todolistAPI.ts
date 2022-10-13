@@ -72,7 +72,7 @@ export type TaskFromServerType = {
     addedDate: string
 }
 
-type ResponseType<D = {}> = {
+export type ResponseType<D = {}> = {
     data: D
     resultCode: number
     messages: string[]

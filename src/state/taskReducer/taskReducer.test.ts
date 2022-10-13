@@ -1,5 +1,5 @@
-import {setTodolistsAC} from "./todolistReducer";
-import {TaskFromServerType, TodolistFromServerType} from "../API/todolistAPI";
+import {setTodolistsAC} from "../todolistReducer/todolistReducer";
+import {TaskFromServerType, TodolistFromServerType} from "../../API/todolistAPI";
 import {setTasksAC, taskReducer, TaskStateType} from "./taskReducer";
 
 test(`Empty array(tasks) should be added to object properties`, () => {

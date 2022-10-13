@@ -8,10 +8,11 @@ import {
     FilterValueType,
     removeTodolistTC,
     updateTodolistTC
-} from "../../state/todolistReducer";
+} from "../../state/todolistReducer/todolistReducer";
 import {TaskFromServerType, TaskStatuses} from "../../API/todolistAPI";
-import {addTaskTC, fetchTasksTC} from "../../state/taskReducer";
+import {addTaskTC, fetchTasksTC} from "../../state/taskReducer/taskReducer";
 import {useAppDispatch} from "../../state/hooks";
+import {AppStatusType} from "../../state/appReducer/appReducer";
 
 type TodolistPropsType = {
     id: string
@@ -23,8 +24,8 @@ type TodolistPropsType = {
     changeTaskStatus: (id: string, status: TaskStatuses, todolistId: string) => void
     filter: FilterValueType
     editTaskTitle: (todolistId: string, id: string, newTitle: string) => void
+    todolistEntityStatus : AppStatusType
 }
-
 
 export const Todolist = React.memo((props: TodolistPropsType) => {
 
@@ -40,31 +41,30 @@ export const Todolist = React.memo((props: TodolistPropsType) => {
     }
 
     const addTask = useCallback((title: string) => {
-        //props.addTask(title, props.id)
+
         dispatch(addTaskTC(props.id, title))
     }, [dispatch, props.id])
 
     const onTodolistTitleChangeHandler = (title: string) => {
         dispatch(updateTodolistTC(props.id, title))
     }
-    let tasksForTodolist = props.tasks //.props
+    let tasksForTodolist = props.tasks
     if (props.filter === "Completed") {
 
-        tasksForTodolist = props.tasks.filter((t) => t.status === TaskStatuses.Completed) //
+        tasksForTodolist = props.tasks.filter((t) => t.status === TaskStatuses.Completed)
     }
     if (props.filter === "Active") {
-
-        tasksForTodolist = props.tasks.filter((t) => t.status === TaskStatuses.New) // props.
+        tasksForTodolist = props.tasks.filter((t) => t.status === TaskStatuses.New)
     }
     //FUNCTIONS^________________________________________________________________________________________________________
-    // @ts-ignore
+
     return (
         <div>
             <h3>
                 <EditableSpan title={props.title} onChangeTitle={(title) => {
                     onTodolistTitleChangeHandler(title)
                 }}/>
-                <IconButton onClick={removeTodolistHandler} color={"secondary"}>
+                <IconButton onClick={removeTodolistHandler} color={"secondary"} disabled={props.todolistEntityStatus === "loading"}>
                     <DeleteIcon/>
                 </IconButton>
             </h3>

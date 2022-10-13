@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import {Checkbox, IconButton} from "@mui/material";
 import {TaskModelType, TaskPriorities, TaskStatuses} from "../../API/todolistAPI";
 import {useAppDispatch} from "../../state/hooks";
-import {removeTaskTC, updateTaskTC} from "../../state/taskReducer";
+import {removeTaskTC, updateTaskTC} from "../../state/taskReducer/taskReducer";
 
 type PropsType = {
     id: string
