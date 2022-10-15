@@ -84,7 +84,6 @@ type GetTasksResponseType = {
     error: string
 }
 
-
 export type TaskModelType = {
     title: string
     description: string
@@ -92,6 +91,26 @@ export type TaskModelType = {
     priority: TaskPriorities
     startDate: string
     deadline: string
+}
+
+//AUTH API______________________________________________________________________________________________________________
+
+export const authAPI = {
+    login(LoginValues: LoginParamsType) {
+        return instance.post<ResponseType<{ userId?: number }>>(`/auth/login`, LoginValues)
+    },
+    authMe() {
+        return instance.get<ResponseType<{ id: number, email: string, login: string }>>(`/auth/me`)
+    },
+    logout() {
+        return instance.delete<ResponseType>("/auth/login")
+    }
+}
+
+export type LoginParamsType = {
+    email: string
+    password: string
+    rememberMe: boolean
 }
 
 

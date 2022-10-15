@@ -3,7 +3,8 @@ import {appReducer, AppStatusType, setAppErrorAC, setAppStatusAC} from "./appRed
 test("correct app status should be applied to app", () => {
     const startState = {
         appStatus: "loading" as AppStatusType,
-        error: "null"
+        error: "null",
+        isInitialised: false
     }
 
     const endState = appReducer(startState, setAppStatusAC("idle"))
@@ -14,7 +15,8 @@ test("correct app status should be applied to app", () => {
 test("Correct error should be applied to APP", () => {
     const startState = {
         appStatus: "loading" as AppStatusType,
-        error: null
+        error: null,
+        isInitialised: false
     }
 
     const endState = appReducer(startState, setAppErrorAC("u failed again"))

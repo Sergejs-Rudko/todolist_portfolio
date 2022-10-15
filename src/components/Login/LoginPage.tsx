@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React from 'react'
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -11,19 +11,42 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import {useFormik} from "formik";
+import {useAppDispatch, useAppSelector} from "../../state/hooks";
+import {loginTC} from "../../state/authReducer/authReducer";
+import {useNavigate} from "react-router-dom";
 
 
 export const LoginPage = () => {
 
+    const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn)
+    const navigate = useNavigate()
 
-    const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
-    }, [])
+    if (isLoggedIn) {
+        navigate("/")
+    }
+
+
+    const dispatch = useAppDispatch()
+
+    const formik = useFormik({
+        initialValues: {
+            email: '',
+            password: '',
+            rememberMe: false,
+        },
+        validate(values) {
+            if (!values.email) {
+                return ({email: "Email is required"})
+            }
+            if (!values.password) {
+                return ({password: "Password is required"})
+            }
+        },
+        onSubmit: values => {
+            dispatch(loginTC(values));
+        },
+    })
 
     return (
         <Container component="main" maxWidth="xs">
@@ -42,29 +65,33 @@ export const LoginPage = () => {
                 <Typography component="h1" variant="h5">
                     Sign in
                 </Typography>
-                <Box component="form" noValidate sx={{mt: 1}} onSubmit={handleSubmit}>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    formik.handleSubmit()
+                }}>
                     <TextField
                         margin="normal"
-                        required
                         fullWidth
                         id="email"
                         label="Email Address"
-                        name="email"
                         autoComplete="email"
                         autoFocus
+                        {...formik.getFieldProps("email")}
                     />
+                    {!formik.values.email && <div>Email is required</div>}
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        name="password"
                         label="Password"
                         type="password"
                         id="password"
                         autoComplete="current-password"
+                        {...formik.getFieldProps("password")}
                     />
                     <FormControlLabel
-                        control={<Checkbox value="remember" color="primary"/>}
+                        control={<Checkbox  {...formik.getFieldProps("rememberMe")} color="primary"
+                                            checked={formik.values.rememberMe}/>}
                         label="Remember me"
                     />
                     <Button
@@ -87,7 +114,7 @@ export const LoginPage = () => {
                             </Link>
                         </Grid>
                     </Grid>
-                </Box>
+                </form>
             </Box>
 
         </Container>
