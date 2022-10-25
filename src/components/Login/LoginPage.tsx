@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,15 +16,21 @@ import {useAppDispatch, useAppSelector} from "../../state/hooks";
 import {loginTC} from "../../state/authReducer/authReducer";
 import {useNavigate} from "react-router-dom";
 
-
+type FormValuesType = {
+    email: string
+    password: string
+    rememberMe: boolean
+}
 export const LoginPage = () => {
 
     const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn)
     const navigate = useNavigate()
 
-    if (isLoggedIn) {
-        navigate("/")
-    }
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate("/")
+        }
+    }, [isLoggedIn])
 
 
     const dispatch = useAppDispatch()
@@ -43,8 +49,12 @@ export const LoginPage = () => {
                 return ({password: "Password is required"})
             }
         },
-        onSubmit: values => {
-            dispatch(loginTC(values));
+        onSubmit: async (values: FormValuesType, formikHelpers) => {
+            const resp = await dispatch(loginTC(values));
+            if (resp.type === loginTC.rejected.type) {
+                debugger
+                formikHelpers.setFieldError("email", "error for test")
+            }
         },
     })
 
@@ -78,7 +88,7 @@ export const LoginPage = () => {
                         autoFocus
                         {...formik.getFieldProps("email")}
                     />
-                    {!formik.values.email && <div>Email is required</div>}
+
                     <TextField
                         margin="normal"
                         required

@@ -67,7 +67,7 @@ export type TaskFromServerType = {
     deadline: string
     //model ^^
     id: string
-    todolistId: string
+    todoListId: string
     order: number
     addedDate: string
 }
@@ -76,6 +76,7 @@ export type ResponseType<D = {}> = {
     data: D
     resultCode: number
     messages: string[]
+    fieldsErrors?: Array<{field : string, message : string}>
 }
 
 type GetTasksResponseType = {

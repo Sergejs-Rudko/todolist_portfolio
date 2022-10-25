@@ -8,11 +8,8 @@ import {
     TodolistDomainType
 } from "./state/todolistReducer/todolistReducer";
 import {
-    addTaskAC,
-    changeTaskStatusAC,
-    changeTaskTitleAC,
-    removeTaskAC,
-    TaskStateType
+    addTaskTC, removeTaskTC,
+    TaskStateType, updateTaskTC
 } from "./state/taskReducer/taskReducer";
 import {TaskStatuses} from "./API/todolistAPI";
 import {Grid, Paper} from "@mui/material";
@@ -39,31 +36,33 @@ export const TodolistsList = React.memo(() => {
         } else {
             dispatch(fetchTodolistsTC())
         }
-    }, [isLoggedIn])
+    }, [isLoggedIn, dispatch, navigate])
 
     const changeFilter = useCallback((filterValue: FilterValueType, todolistId: string) => {
-        dispatch(changeTodolistFilterAC(filterValue, todolistId))
+        dispatch(changeTodolistFilterAC({filter: filterValue, id: todolistId}))
     }, [dispatch])
 
     const removeTask = useCallback((id: string, todolistId: string) => {
-        dispatch(removeTaskAC(todolistId, id))
+        dispatch(removeTaskTC({taskId: id, todolistId}))
     }, [dispatch])
 
     const addTask = useCallback((title: string, todolistId: string) => {
-        dispatch(addTaskAC(todolistId, title))
+        dispatch(addTaskTC({todolistId, title}))
     }, [dispatch])
 
     const changeTaskStatus = useCallback((id: string, status: TaskStatuses, todolistId: string) => {
-        dispatch(changeTaskStatusAC(todolistId, id, status))
-    }, [dispatch])
+        // @ts-ignore
+        dispatch(updateTaskTC({taskId: id, todolistId, task: tasks[todolistId].find(t => t.id === id)}))
+    }, [dispatch,tasks])
 
     const addTodolist = useCallback((title: string) => {
         dispatch(createTodolistTC(title))
     }, [dispatch])
 
     const editTaskTitle = useCallback((todolistId: string, id: string, newTitle: string) => {
-        dispatch(changeTaskTitleAC(todolistId, id, newTitle))
-    }, [dispatch])
+        // @ts-ignore
+        dispatch(updateTaskTC({taskId: id, todolistId, task: tasks[todolistId].find(t => t.id === id)}))
+    }, [dispatch,tasks])
 
     return (
         <>
@@ -72,11 +71,8 @@ export const TodolistsList = React.memo(() => {
             </Grid>
             <Grid container columnGap={5}>
                 {
-
                     todolists.map((tl) => {
-
                         let tasksForTodolist = tasks[tl.id]
-
                         return (
                             <Grid item key={tl.id}>
                                 <Paper elevation={3} style={{padding: "10px"}}>
